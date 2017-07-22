@@ -142,8 +142,16 @@ def _default_help_command(ctx, *commands : str):
         if characters > 1000:
             destination = ctx.message.author
 
-    for page in pages:
-        yield from destination.send(page)
+    try:
+        for page in pages:
+            yield from destination.send(page)
+    except discord.Forbidden:
+        if not isinstance(destination, discord.abc.GuildChannel):
+            yield from ctx.message.channel.send(
+                '{0.mention}: Unable to send help via DM as you have them disabled, try DMing me the help command.'.format(ctx.author))
+            return
+        else:
+            raise
 
 class BotBase(GroupMixin):
     def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
